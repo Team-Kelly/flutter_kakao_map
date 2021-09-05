@@ -6,6 +6,7 @@ import '../types.dart';
 
 /// Converts an [Iterable] of Markers in a Map of MarkerId -> Marker.
 Map<MarkerId, Marker> keyByMarkerId(Iterable<Marker> markers) {
+  // ignore: unnecessary_null_comparison
   if (markers == null) {
     return <MarkerId, Marker>{};
   }
@@ -14,9 +15,10 @@ Map<MarkerId, Marker> keyByMarkerId(Iterable<Marker> markers) {
 }
 
 /// Converts a Set of Markers into something serializable in JSON.
-List<Map<String, dynamic>> serializeMarkerSet(Set<Marker> markers) {
+List<Map<String, dynamic>>? serializeMarkerSet(Set<Marker?>? markers) {
+  // ignore: unnecessary_null_comparison
   if (markers == null) {
     return null;
   }
-  return markers.map<Map<String, dynamic>>((Marker m) => m.toJson()).toList();
+  return markers.map<Map<String, dynamic>>((Marker? m) => m!.toJson()).toList();
 }

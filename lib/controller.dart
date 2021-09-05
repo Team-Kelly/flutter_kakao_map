@@ -15,8 +15,8 @@ class KakaoMapController {
   KakaoMapController._(
     CameraPosition initialCameraPosition,
     this._kakaoMapState, {
-    @required this.mapId,
-  }) : assert(_kakaoMapsFlutterPlatform != null) {
+    required this.mapId,
+  }) {
     _connectStreams(mapId);
   }
 
@@ -29,7 +29,6 @@ class KakaoMapController {
     CameraPosition initialCameraPosition,
     _KakaoMapState kakaoMapState,
   ) async {
-    assert(id != null);
     await _kakaoMapsFlutterPlatform.init(id);
     return KakaoMapController._(
       initialCameraPosition,
@@ -41,9 +40,10 @@ class KakaoMapController {
   /// Used to communicate with the native platform.
   ///
   /// Accessible only for testing.
+  // ignore: todo
   // TODO(dit) https://github.com/flutter/flutter/issues/55504 Remove this getter.
   @visibleForTesting
-  MethodChannel get channel {
+  MethodChannel? get channel {
     if (_kakaoMapsFlutterPlatform is MethodChannelKakaoMapsFlutter) {
       return (_kakaoMapsFlutterPlatform as MethodChannelKakaoMapsFlutter)
           .channel(mapId);
@@ -57,28 +57,24 @@ class KakaoMapController {
     if (_kakaoMapState.widget.onCameraMoveStarted != null) {
       _kakaoMapsFlutterPlatform
           .onCameraMoveStarted(mapId: mapId)
-          .listen((_) => _kakaoMapState.widget.onCameraMoveStarted());
+          .listen((_) => _kakaoMapState.widget.onCameraMoveStarted!());
     }
     if (_kakaoMapState.widget.onCameraMove != null) {
       _kakaoMapsFlutterPlatform
           .onCameraMove(mapId: mapId)
-          .listen((e) => {_kakaoMapState.widget.onCameraMove(e.value)});
+          .listen((e) => {_kakaoMapState.widget.onCameraMove!(e.value)});
     }
     if (_kakaoMapState.widget.onCurrentLocationUpdate != null) {
       _kakaoMapsFlutterPlatform.onCurrentLocationUpdate(mapId: mapId).listen(
-          (e) => {_kakaoMapState.widget.onCurrentLocationUpdate(e.value)});
+          (e) => {_kakaoMapState.widget.onCurrentLocationUpdate!(e.value)});
     }
 
-    if (_kakaoMapState.widget.onMarkerSelect != null) {
-      _kakaoMapsFlutterPlatform.onMarkerSelect(mapId: mapId).listen((e) => {
-            // _kakaoMapState.widget.onMarkerSelect(e.value)
-          });
-    }
-    if (_kakaoMapState.widget.onCameraIdle != null) {
-      _kakaoMapsFlutterPlatform
-          .onCameraIdle(mapId: mapId)
-          .listen((_) => _kakaoMapState.widget.onCameraIdle());
-    }
+    _kakaoMapsFlutterPlatform.onMarkerSelect(mapId: mapId).listen((e) => {
+          // _kakaoMapState.widget.onMarkerSelect(e.value)
+        });
+    _kakaoMapsFlutterPlatform
+        .onCameraIdle(mapId: mapId)
+        .listen((_) => _kakaoMapState.widget.onCameraIdle());
     _kakaoMapsFlutterPlatform
         .onMarkerTap(mapId: mapId)
         .listen((MarkerTapEvent e) => _kakaoMapState.onMarkerTap(e.value));
@@ -101,7 +97,6 @@ class KakaoMapController {
   ///
   /// The returned [Future] completes after listeners have been notified.
   Future<void> _updateMapOptions(Map<String, dynamic> optionsUpdate) {
-    assert(optionsUpdate != null);
     return _kakaoMapsFlutterPlatform.updateMapOptions(optionsUpdate,
         mapId: mapId);
   }
@@ -113,7 +108,6 @@ class KakaoMapController {
   ///
   /// The returned [Future] completes after listeners have been notified.
   Future<void> _updateMarkers(MarkerUpdates markerUpdates) {
-    assert(markerUpdates != null);
     return _kakaoMapsFlutterPlatform.updateMarkers(markerUpdates, mapId: mapId);
   }
 
@@ -164,7 +158,6 @@ class KakaoMapController {
   ///   * [hideMarkerInfoWindow] to hide the Info Window.
   ///   * [isMarkerInfoWindowShown] to check if the Info Window is showing.
   Future<void> showMarkerInfoWindow(MarkerId markerId) {
-    assert(markerId != null);
     return _kakaoMapsFlutterPlatform.showMarkerInfoWindow(markerId,
         mapId: mapId);
   }
@@ -178,7 +171,6 @@ class KakaoMapController {
   ///   * [showMarkerInfoWindow] to show the Info Window.
   ///   * [isMarkerInfoWindowShown] to check if the Info Window is showing.
   Future<void> hideMarkerInfoWindow(MarkerId markerId) {
-    assert(markerId != null);
     return _kakaoMapsFlutterPlatform.hideMarkerInfoWindow(markerId,
         mapId: mapId);
   }
@@ -191,8 +183,7 @@ class KakaoMapController {
   /// * See also:
   ///   * [showMarkerInfoWindow] to show the Info Window.
   ///   * [hideMarkerInfoWindow] to hide the Info Window.
-  Future<bool> isMarkerInfoWindowShown(MarkerId markerId) {
-    assert(markerId != null);
+  Future<bool?> isMarkerInfoWindowShown(MarkerId markerId) {
     return _kakaoMapsFlutterPlatform.isMarkerInfoWindowShown(markerId,
         mapId: mapId);
   }
@@ -214,12 +205,12 @@ class KakaoMapController {
   }
 
   /// Returns the current zoom level of the map
-  Future<double> getZoomLevel() {
+  Future<double?> getZoomLevel() {
     return _kakaoMapsFlutterPlatform.getZoomLevel(mapId: mapId);
   }
 
   /// Returns the image bytes of the map
-  Future<Uint8List> takeSnapshot() {
+  Future<Uint8List?> takeSnapshot() {
     return _kakaoMapsFlutterPlatform.takeSnapshot(mapId: mapId);
   }
 }

@@ -27,10 +27,10 @@ import 'package:stream_transform/stream_transform.dart';
 class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   // Keep a collection of id -> channel
   // Every method call passes the int mapId
-  final Map<int, MethodChannel> _channels = {};
+  final Map<int, MethodChannel?> _channels = {};
 
   /// Accesses the MethodChannel associated to the passed mapId.
-  MethodChannel channel(int mapId) {
+  MethodChannel? channel(int mapId) {
     return _channels[mapId];
   }
 
@@ -39,14 +39,14 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   /// This method is called when the plugin is first initialized.
   @override
   Future<void> init(int mapId) {
-    MethodChannel channel;
+    MethodChannel? channel;
     if (!_channels.containsKey(mapId)) {
       channel = MethodChannel('plugins.flutter.io/kakao_maps_$mapId');
       channel.setMethodCallHandler(
           (MethodCall call) => _handleMethodCall(call, mapId));
       _channels[mapId] = channel;
     }
-    return channel.invokeMethod<void>('map#waitForMap');
+    return channel!.invokeMethod<void>('map#waitForMap');
   }
 
   // The controller we need to broadcast the different events coming
@@ -62,53 +62,53 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
       _mapEventStreamController.stream.where((event) => event.mapId == mapId);
 
   @override
-  Stream<CameraMoveStartedEvent> onCameraMoveStarted({@required int mapId}) {
+  Stream<CameraMoveStartedEvent> onCameraMoveStarted({required int mapId}) {
     return _events(mapId).whereType<CameraMoveStartedEvent>();
   }
 
   @override
-  Stream<CameraMoveEvent> onCameraMove({@required int mapId}) {
+  Stream<CameraMoveEvent> onCameraMove({required int mapId}) {
     return _events(mapId).whereType<CameraMoveEvent>();
   }
 
   @override
   Stream<CameraCurrentLocationEvent> onCurrentLocationUpdate(
-      {@required int mapId}) {
+      {required int mapId}) {
     return _events(mapId).whereType<CameraCurrentLocationEvent>();
   }
 
   @override
-  Stream<MarkerSelectEvent> onMarkerSelect({@required int mapId}) {
+  Stream<MarkerSelectEvent> onMarkerSelect({required int mapId}) {
     return _events(mapId).whereType<MarkerSelectEvent>();
   }
 
   @override
-  Stream<CameraIdleEvent> onCameraIdle({@required int mapId}) {
+  Stream<CameraIdleEvent> onCameraIdle({required int mapId}) {
     return _events(mapId).whereType<CameraIdleEvent>();
   }
 
   @override
-  Stream<MarkerTapEvent> onMarkerTap({@required int mapId}) {
+  Stream<MarkerTapEvent> onMarkerTap({required int mapId}) {
     return _events(mapId).whereType<MarkerTapEvent>();
   }
 
   @override
-  Stream<InfoWindowTapEvent> onInfoWindowTap({@required int mapId}) {
+  Stream<InfoWindowTapEvent> onInfoWindowTap({required int mapId}) {
     return _events(mapId).whereType<InfoWindowTapEvent>();
   }
 
   @override
-  Stream<MarkerDragEndEvent> onMarkerDragEnd({@required int mapId}) {
+  Stream<MarkerDragEndEvent> onMarkerDragEnd({required int mapId}) {
     return _events(mapId).whereType<MarkerDragEndEvent>();
   }
 
   @override
-  Stream<MapTapEvent> onTap({@required int mapId}) {
+  Stream<MapTapEvent> onTap({required int mapId}) {
     return _events(mapId).whereType<MapTapEvent>();
   }
 
   @override
-  Stream<MapLongPressEvent> onLongPress({@required int mapId}) {
+  Stream<MapLongPressEvent> onLongPress({required int mapId}) {
     return _events(mapId).whereType<MapLongPressEvent>();
   }
 
@@ -155,7 +155,7 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
       case 'marker#onDragEnd':
         _mapEventStreamController.add(MarkerDragEndEvent(
           mapId,
-          MapPoint.fromJson(call.arguments['position']),
+          MapPoint.fromJson(call.arguments['position'])!,
           MarkerId(call.arguments['markerId']),
         ));
         break;
@@ -168,13 +168,13 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
       case 'map#onTap':
         _mapEventStreamController.add(MapTapEvent(
           mapId,
-          MapPoint.fromJson(call.arguments['position']),
+          MapPoint.fromJson(call.arguments['position'])!,
         ));
         break;
       case 'map#onLongPress':
         _mapEventStreamController.add(MapLongPressEvent(
           mapId,
-          MapPoint.fromJson(call.arguments['position']),
+          MapPoint.fromJson(call.arguments['position'])!,
         ));
         break;
       default:
@@ -191,10 +191,9 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   @override
   Future<void> updateMapOptions(
     Map<String, dynamic> optionsUpdate, {
-    @required int mapId,
+    required int mapId,
   }) {
-    assert(optionsUpdate != null);
-    return channel(mapId).invokeMethod<void>(
+    return channel(mapId)!.invokeMethod<void>(
       'map#update',
       <String, dynamic>{
         'options': optionsUpdate,
@@ -211,10 +210,9 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   @override
   Future<void> updateMarkers(
     MarkerUpdates markerUpdates, {
-    @required int mapId,
+    required int mapId,
   }) {
-    assert(markerUpdates != null);
-    return channel(mapId).invokeMethod<void>(
+    return channel(mapId)!.invokeMethod<void>(
       'markers#update',
       markerUpdates.toJson(),
     );
@@ -227,9 +225,9 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   @override
   Future<void> animateCamera(
     CameraUpdate cameraUpdate, {
-    @required int mapId,
+    required int mapId,
   }) {
-    return channel(mapId)
+    return channel(mapId)!
         .invokeMethod<void>('camera#animate', <String, dynamic>{
       'cameraUpdate': cameraUpdate.toJson(),
     });
@@ -242,9 +240,9 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   @override
   Future<void> moveCamera(
     CameraUpdate cameraUpdate, {
-    @required int mapId,
+    required int mapId,
   }) {
-    return channel(mapId).invokeMethod<void>('camera#move', <String, dynamic>{
+    return channel(mapId)!.invokeMethod<void>('camera#move', <String, dynamic>{
       'cameraUpdate': cameraUpdate.toJson(),
     });
   }
@@ -275,11 +273,11 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   @override
   Future<void> setMapStyle(
     String mapStyle, {
-    @required int mapId,
+    required int mapId,
   }) async {
-    final List<dynamic> successAndError = await channel(mapId)
+    final List? successAndError = await channel(mapId)!
         .invokeMethod<List<dynamic>>('map#setStyle', mapStyle);
-    final bool success = successAndError[0];
+    final bool success = successAndError![0];
     if (!success) {
       throw MapStyleException(successAndError[1]);
     }
@@ -288,12 +286,12 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   /// Return the region that is visible in a map.
   @override
   Future<LatLngBounds> getVisibleRegion({
-    @required int mapId,
+    required int mapId,
   }) async {
-    final Map<String, dynamic> latLngBounds = await channel(mapId)
+    final Map<String, dynamic>? latLngBounds = await channel(mapId)!
         .invokeMapMethod<String, dynamic>('map#getVisibleRegion');
-    final LatLng southwest = LatLng.fromJson(latLngBounds['southwest']);
-    final LatLng northeast = LatLng.fromJson(latLngBounds['northeast']);
+    final LatLng southwest = LatLng.fromJson(latLngBounds!['southwest'])!;
+    final LatLng northeast = LatLng.fromJson(latLngBounds['northeast'])!;
 
     return LatLngBounds(northeast: northeast, southwest: southwest);
   }
@@ -309,10 +307,9 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   @override
   Future<void> showMarkerInfoWindow(
     MarkerId markerId, {
-    @required int mapId,
+    required int mapId,
   }) {
-    assert(markerId != null);
-    return channel(mapId).invokeMethod<void>(
+    return channel(mapId)!.invokeMethod<void>(
         'markers#showInfoWindow', <String, String>{'markerId': markerId.value});
   }
 
@@ -327,41 +324,40 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   @override
   Future<void> hideMarkerInfoWindow(
     MarkerId markerId, {
-    @required int mapId,
+    required int mapId,
   }) {
-    assert(markerId != null);
-    return channel(mapId).invokeMethod<void>(
+    return channel(mapId)!.invokeMethod<void>(
         'markers#hideInfoWindow', <String, String>{'markerId': markerId.value});
   }
 
   @override
-  Future<bool> clearMapTilePersistentCache({
-    @required int mapId,
+  Future<bool?> clearMapTilePersistentCache({
+    required int mapId,
   }) {
-    return channel(mapId).invokeMethod<bool>('map#clearMapTilePersistentCache');
+    return channel(mapId)!.invokeMethod<bool>('map#clearMapTilePersistentCache');
   }
 
   @override
-  Future<bool> zoomIn({
-    @required int mapId,
+  Future<bool?> zoomIn({
+    required int mapId,
   }) {
-    return channel(mapId).invokeMethod<bool>('map#zoomIn');
+    return channel(mapId)!.invokeMethod<bool>('map#zoomIn');
   }
 
   @override
-  Future<bool> zoomOut({
-    @required int mapId,
+  Future<bool?> zoomOut({
+    required int mapId,
   }) {
-    return channel(mapId).invokeMethod<bool>('map#zoomOut');
+    return channel(mapId)!.invokeMethod<bool>('map#zoomOut');
   }
 
   @override
   Future<MapPoint> getMapCenterPoint({
-    @required int mapId,
+    required int mapId,
   }) async {
-    final List<dynamic> mapPoint = await channel(mapId)
+    final List? mapPoint = await channel(mapId)!
         .invokeMethod<List<dynamic>>('map#getMapCenterPoint');
-    return MapPoint(mapPoint[0], mapPoint[1]);
+    return MapPoint(mapPoint![0], mapPoint[1]);
   }
 
   /// Returns `true` when the [InfoWindow] is showing, `false` otherwise.
@@ -373,29 +369,28 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   ///   * [showMarkerInfoWindow] to show the Info Window.
   ///   * [hideMarkerInfoWindow] to hide the Info Window.
   @override
-  Future<bool> isMarkerInfoWindowShown(
+  Future<bool?> isMarkerInfoWindowShown(
     MarkerId markerId, {
-    @required int mapId,
+    required int mapId,
   }) {
-    assert(markerId != null);
-    return channel(mapId).invokeMethod<bool>('markers#isInfoWindowShown',
+    return channel(mapId)!.invokeMethod<bool>('markers#isInfoWindowShown',
         <String, String>{'markerId': markerId.value});
   }
 
   /// Returns the current zoom level of the map
   @override
-  Future<double> getZoomLevel({
-    @required int mapId,
+  Future<double?> getZoomLevel({
+    required int mapId,
   }) {
-    return channel(mapId).invokeMethod<double>('map#getZoomLevel');
+    return channel(mapId)!.invokeMethod<double>('map#getZoomLevel');
   }
 
   /// Returns the image bytes of the map
   @override
-  Future<Uint8List> takeSnapshot({
-    @required int mapId,
+  Future<Uint8List?> takeSnapshot({
+    required int mapId,
   }) {
-    return channel(mapId).invokeMethod<Uint8List>('map#takeSnapshot');
+    return channel(mapId)!.invokeMethod<Uint8List>('map#takeSnapshot');
   }
 
   /// This method builds the appropriate platform view where the map
@@ -405,7 +400,7 @@ class MethodChannelKakaoMapsFlutter extends KakaoMapsFlutterPlatform {
   @override
   Widget buildView(
       Map<String, dynamic> creationParams,
-      Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers,
+      Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
       PlatformViewCreatedCallback onPlatformViewCreated) {
     if (defaultTargetPlatform == TargetPlatform.android) {
       return AndroidView(
